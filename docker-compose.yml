@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  # create sql database with volumes
+  sqlserver:
+    container_name: sqlserver
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=myStrongPassword12#
+    volumes:
+      - sqldata:/var/opt/mssql
+     # deployment configration resources
+    deploy:
+      resources:
+        reservations:
+          cpus: '2'
+          memory: 2GB
+   
+  # create web app
+  webapp:
+    container_name: webapp
+    build:
+      dockerfile: ./Homies/Dockerfile
+     # use the image for the app uploaded on Azure
+    image: stasihomiescr.azurecr.io/homies-image
+    domainname: stasi14devopshomies # use domainname to deploy in Azure
+    ports:
+      - "80:80"
+    restart: on-failure
+
+volumes:
+  sqldata:
+    # additinal volume driver options
+    driver: azure_file
+    driver_opts:
+      share_name: sql-volume
+      storage_account_name: stasihomiesstorageacc
